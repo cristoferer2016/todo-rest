@@ -1,9 +1,8 @@
 package com.openwebinars.todo.rest.users;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.openwebinars.todo.rest.model.Tag.Tag;
+import com.openwebinars.todo.rest.model.category.Category;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,13 +29,25 @@ public class User implements UserDetails {
     private String username;
     private String email;
     private String password;
+    private String fullname;
 
+    @ManyToMany
+    private List<Tag> tags;
+
+    @ManyToMany
+    private List<Category> categories;
+
+
+    @Enumerated(EnumType.STRING)
     @Builder.Default
-    private boolean isAdmin = false;
+    private Role role = Role.USER;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        String role = "ROLE_" + ((isAdmin) ? "ADMIN" : "USER");
-        return List.of(new SimpleGrantedAuthority(role));
+
+        return List.of(
+                new SimpleGrantedAuthority("ROLE_" + role.name())
+        );
+
     }
 }

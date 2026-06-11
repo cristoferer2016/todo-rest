@@ -29,10 +29,16 @@ public class Task {
     @Lob
     private String description;
 
+
+    private boolean completed;
+    //
+
     private LocalDateTime deadline;
 
     @ManyToOne
     private User author;
+
+
 
 
     @Override
