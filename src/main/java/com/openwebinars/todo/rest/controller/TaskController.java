@@ -1,6 +1,9 @@
 package com.openwebinars.todo.rest.controller;
 
+import com.openwebinars.todo.rest.dto.DashboardDto;
 import com.openwebinars.todo.rest.dto.EditTaskDto;
+import com.openwebinars.todo.rest.model.Priority;
+import com.openwebinars.todo.rest.model.TaskStatus;
 import com.openwebinars.todo.rest.dto.GetTaskDto;
 import com.openwebinars.todo.rest.service.TaskService;
 import com.openwebinars.todo.rest.users.User;
@@ -212,7 +215,6 @@ public class TaskController {
             @PathVariable Long id) {
         return GetTaskDto.of(taskService.edit(cmd, id));
     }
-
     @Operation(
             summary = "Eliminar una tarea",
             description = "Permite eliminar una tarea asociada al usuario autenticado si se proporciona su ID"
@@ -221,14 +223,170 @@ public class TaskController {
             responseCode = "204",
             content = @Content(schema = @Schema(implementation = Void.class)))
     @PreAuthorize("""
-            @ownerCheck.check(#id, authentication.principal.getId())
-            """)
+        @ownerCheck.check(#id, authentication.principal.getId())
+        """)
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         taskService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(
+            summary = "Asignar tag a tarea",
+            description = "Permite asignar un tag a una tarea creada por el usuario autenticado"
+    )
+    @PreAuthorize("""
+        @ownerCheck.check(#taskId, authentication.principal.getId())
+        """)
+    @PostMapping("/{taskId}/tags/{tagId}")
+    public GetTaskDto addTagToTask(
+            @PathVariable Long taskId,
+            @PathVariable Long tagId) {
+
+        return GetTaskDto.of(taskService.addTagToTask(taskId, tagId));
+    }
+    @Operation(
+            summary = "Buscar tareas por título",
+            description = "Permite buscar tareas del usuario autenticado por título"
+    )
+    @GetMapping("/search/title")
+    public List<GetTaskDto> searchByTitle(
+            @AuthenticationPrincipal User author,
+            @RequestParam String title) {
+
+        return taskService.findByTitle(author, title)
+                .stream()
+                .map(GetTaskDto::of)
+                .toList();
+    }
+
+    @Operation(
+            summary = "Buscar tareas por descripción",
+            description = "Permite buscar tareas del usuario autenticado por descripción"
+    )
+    @GetMapping("/search/description")
+    public List<GetTaskDto> searchByDescription(
+            @AuthenticationPrincipal User author,
+            @RequestParam String description) {
+
+        return taskService.findByDescription(author, description)
+                .stream()
+                .map(GetTaskDto::of)
+                .toList();
+    }
+
+    @Operation(
+            summary = "Buscar tareas por completada",
+            description = "Permite buscar tareas del usuario autenticado según si están completadas o no"
+    )
+    @GetMapping("/search/completed")
+    public List<GetTaskDto> searchByCompleted(
+            @AuthenticationPrincipal User author,
+            @RequestParam boolean completed) {
+
+        return taskService.findByCompleted(author, completed)
+                .stream()
+                .map(GetTaskDto::of)
+                .toList();
+    }
+
+    @Operation(
+            summary = "Buscar tareas vencidas",
+            description = "Permite buscar tareas vencidas del usuario autenticado"
+    )
+    @GetMapping("/search/expired")
+    public List<GetTaskDto> searchExpired(@AuthenticationPrincipal User author) {
+        return taskService.findExpired(author)
+                .stream()
+                .map(GetTaskDto::of)
+                .toList();
+    }
+
+    @Operation(
+            summary = "Buscar tareas por prioridad",
+            description = "Permite buscar tareas del usuario autenticado por prioridad"
+    )
+    @GetMapping("/search/priority")
+    public List<GetTaskDto> searchByPriority(
+            @AuthenticationPrincipal User author,
+            @RequestParam Priority priority) {
+
+        return taskService.findByPriority(author, priority)
+                .stream()
+                .map(GetTaskDto::of)
+                .toList();
+    }
+
+    @Operation(
+            summary = "Buscar tareas por estado",
+            description = "Permite buscar tareas del usuario autenticado por estado"
+    )
+    @GetMapping("/search/status")
+    public List<GetTaskDto> searchByStatus(
+            @AuthenticationPrincipal User author,
+            @RequestParam TaskStatus status) {
+
+        return taskService.findByStatus(author, status)
+                .stream()
+                .map(GetTaskDto::of)
+                .toList();
+    }
+
+    @Operation(
+            summary = "Buscar tareas por categoría",
+            description = "Permite buscar tareas del usuario autenticado por categoría"
+    )
+    @GetMapping("/search/category/{categoryId}")
+    public List<GetTaskDto> searchByCategory(
+            @AuthenticationPrincipal User author,
+            @PathVariable Long categoryId) {
+
+        return taskService.findByCategory(author, categoryId)
+                .stream()
+                .map(GetTaskDto::of)
+                .toList();
+    }
+
+    @Operation(
+            summary = "Buscar tareas por tag",
+            description = "Permite buscar tareas del usuario autenticado por tag"
+    )
+    @GetMapping("/search/tag/{tagId}")
+    public List<GetTaskDto> searchByTag(
+            @AuthenticationPrincipal User author,
+            @PathVariable Long tagId) {
+
+        return taskService.findByTag(author, tagId)
+                .stream()
+                .map(GetTaskDto::of)
+                .toList();
+    }
+
+    @Operation(
+            summary = "Eliminar tag de tarea",
+            description = "Permite eliminar un tag de una tarea creada por el usuario autenticado"
+    )
+    @PreAuthorize("""
+        @ownerCheck.check(#taskId, authentication.principal.getId())
+        """)
+
+    @DeleteMapping("/{taskId}/tags/{tagId}")
+    public GetTaskDto removeTagFromTask(
+            @PathVariable Long taskId,
+            @PathVariable Long tagId) {
+
+        return GetTaskDto.of(taskService.removeTagFromTask(taskId, tagId));
+    }
+    @Operation(
+            summary = "Dashboard de tareas",
+            description = "Permite obtener información resumida de las tareas del usuario autenticado"
+    )
+    @GetMapping("/dashboard")
+    public DashboardDto dashboard(@AuthenticationPrincipal User author) {
+        return taskService.getDashboard(author);
+    }
+    }
 
 
-}
+
+

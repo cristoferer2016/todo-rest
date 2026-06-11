@@ -1,7 +1,5 @@
 package com.openwebinars.todo.rest.users;
 
-import com.openwebinars.todo.rest.model.Tag.Tag;
-import com.openwebinars.todo.rest.model.category.Category;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,13 +28,6 @@ public class User implements UserDetails {
     private String email;
     private String password;
     private String fullname;
-
-    @ManyToMany
-    private List<Tag> tags;
-
-    @ManyToMany
-    private List<Category> categories;
-
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
